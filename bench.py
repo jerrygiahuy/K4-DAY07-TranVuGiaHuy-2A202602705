@@ -30,14 +30,14 @@ GEMINI_GENERATION_MODEL = "gemini-3.6-flash"
 
 BENCHMARKS = [
     {
-        "query": "Người mua có bao nhiêu ngày để gửi yêu cầu sau khi đơn đã giao?",
+        "query": "Người mua có bao nhiêu ngày để gửi yêu cầu trả hàng hoàn tiền sau khi nhận hàng?",
         "gold": "15 ngày dương lịch sau khi trạng thái đơn hàng được cập nhật thành Đã giao hàng.",
         "doc_id": "tiktok-buyer-return-refund",
         "needle": "mười lăm (15) ngày",
         "filter": {"audience": "buyer"},
     },
     {
-        "query": "Người bán phải xem xét yêu cầu trả hàng trong thời hạn nào?",
+        "query": "Người bán phải xem xét và phản hồi yêu cầu trả hàng hoàn tiền trong thời hạn nào?",
         "gold": "Trong vòng 1 ngày dương lịch; quá hạn yêu cầu tự động được phê duyệt.",
         "doc_id": "tiktok-seller-return-refund",
         "needle": "trong vòng 1 ngày dương lịch",
@@ -48,14 +48,14 @@ BENCHMARKS = [
         "gold": "Phương thức chuyển sang trả tại điểm giao nhận.",
         "doc_id": "tiktok-return-methods",
         "needle": "chuyển thành trả tại điểm giao nhận",
-        "filter": {"audience": "seller"},
+        "filter": None,
     },
     {
         "query": "Ai chịu phí trả hàng khi lỗi thuộc về người bán?",
         "gold": "Người bán chịu phí vận chuyển trả hàng.",
         "doc_id": "tiktok-return-methods",
         "needle": "chịu phí vận chuyển trả hàng",
-        "filter": {"audience": "seller"},
+        "filter": None,
     },
     {
         "query": "Người bán có bao nhiêu ngày để khiếu nại yêu cầu chỉ hoàn tiền?",

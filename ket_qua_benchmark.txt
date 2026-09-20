@@ -3,31 +3,31 @@ Backend: Gemini embedding + gemini-3.6-flash
 Scoring: 2 điểm nếu chunk chứa đáp án ở top-1; 1 điểm ở top-2/3; 0 nếu vắng.
 
 === fixed_size_650_overlap_100 | 8 chunks ===
-Q1: Người mua có bao nhiêu ngày để gửi yêu cầu sau khi đơn đã giao?
+Q1: Người mua có bao nhiêu ngày để gửi yêu cầu trả hàng hoàn tiền sau khi nhận hàng?
 Gold: 15 ngày dương lịch sau khi trạng thái đơn hàng được cập nhật thành Đã giao hàng.
 Filter: {'audience': 'buyer'} | answer_rank=1 | points=2/2
-  1. score=0.8513 doc_id=tiktok-buyer-return-refund :: # Thời hạn gửi yêu cầu Người mua có thể gửi yêu cầu trả hàng hoặc hoàn tiền trong vòng mười lăm (15) ngày dương lịch sau khi trạng thái đơn hàng được
-  2. score=0.7835 doc_id=tiktok-buyer-return-refund :: cam kết giao hàng. # Lưu ý xử lý Yêu cầu cần được người bán xử lý trong vòng 1 ngày làm việc kể từ khi người mua gửi. Nếu không có hành động, yêu cầu
+  1. score=0.8719 doc_id=tiktok-buyer-return-refund :: # Thời hạn gửi yêu cầu Người mua có thể gửi yêu cầu trả hàng hoặc hoàn tiền trong vòng mười lăm (15) ngày dương lịch sau khi trạng thái đơn hàng được
+  2. score=0.7593 doc_id=tiktok-buyer-return-refund :: cam kết giao hàng. # Lưu ý xử lý Yêu cầu cần được người bán xử lý trong vòng 1 ngày làm việc kể từ khi người mua gửi. Nếu không có hành động, yêu cầu
   Offline extractive answer: Người mua có thể gửi yêu cầu trả hàng hoặc hoàn tiền trong vòng mười lăm (15) ngày dương lịch sau khi trạng thái đơn hàng được cập nhật thành “Đã giao hàng”.
   A/B unfiltered=['tiktok-buyer-return-refund', 'tiktok-seller-return-refund', 'tiktok-seller-return-refund']
   A/B filtered  =['tiktok-buyer-return-refund', 'tiktok-buyer-return-refund']
-Q2: Người bán phải xem xét yêu cầu trả hàng trong thời hạn nào?
+Q2: Người bán phải xem xét và phản hồi yêu cầu trả hàng hoàn tiền trong thời hạn nào?
 Gold: Trong vòng 1 ngày dương lịch; quá hạn yêu cầu tự động được phê duyệt.
 Filter: {'audience': 'seller'} | answer_rank=1 | points=2/2
-  1. score=0.8662 doc_id=tiktok-seller-return-refund :: # Xem xét yêu cầu Người bán phải xem xét yêu cầu trả hàng hoặc hoàn tiền trong vòng 1 ngày dương lịch kể từ khi nhận yêu cầu. Nếu không, yêu cầu được
-  2. score=0.8258 doc_id=tiktok-seller-return-refund :: # Kiểm tra hàng trả về Đối với trả hàng lấy tại nhà hoặc gửi tại bưu cục, người bán có 2 ngày dương lịch sau khi nhận sản phẩm để từ chối nếu tình trạ
-  3. score=0.7911 doc_id=tiktok-return-methods :: . # Trách nhiệm người bán và phí Người bán phải quản lý mọi tùy chọn trả hàng khách đã chọn. Nếu người bán không nhận gói trả lại sau ba lần giao, đơn
+  1. score=0.8665 doc_id=tiktok-seller-return-refund :: # Xem xét yêu cầu Người bán phải xem xét yêu cầu trả hàng hoặc hoàn tiền trong vòng 1 ngày dương lịch kể từ khi nhận yêu cầu. Nếu không, yêu cầu được
+  2. score=0.8302 doc_id=tiktok-seller-return-refund :: # Kiểm tra hàng trả về Đối với trả hàng lấy tại nhà hoặc gửi tại bưu cục, người bán có 2 ngày dương lịch sau khi nhận sản phẩm để từ chối nếu tình trạ
+  3. score=0.7854 doc_id=tiktok-seller-appeals :: # Khiếu nại yêu cầu chỉ hoàn tiền Người bán có thể khiếu nại trong vòng 15 ngày dương lịch kể từ khi khoản hoàn tiền được xử lý. # Khiếu nại hàng trả
   Offline extractive answer: Người bán phải xem xét yêu cầu trả hàng hoặc hoàn tiền trong vòng 1 ngày dương lịch kể từ khi nhận yêu cầu.
 Q3: Nếu ba lần lấy hàng tại nhà đều thất bại thì điều gì xảy ra?
 Gold: Phương thức chuyển sang trả tại điểm giao nhận.
-Filter: {'audience': 'seller'} | answer_rank=2 | points=1/2
+Filter: None | answer_rank=2 | points=1/2
   1. score=0.7073 doc_id=tiktok-return-methods :: . # Trách nhiệm người bán và phí Người bán phải quản lý mọi tùy chọn trả hàng khách đã chọn. Nếu người bán không nhận gói trả lại sau ba lần giao, đơn
   2. score=0.6985 doc_id=tiktok-return-methods :: # Gửi tại điểm giao nhận Khách hàng nên trả lại bưu kiện trong vòng 10 ngày dương lịch sau khi nhà bán hàng phê duyệt lần đầu. # Nhận hàng tại nhà Khá
   3. score=0.6817 doc_id=tiktok-return-fees :: # Phí vận chuyển trả hàng Nếu lỗi thuộc về nhà bán hàng, nhà bán hàng phải chịu phí vận chuyển trả hàng. Chi phí trả hàng sẽ được tính vào tài khoản T
   Offline extractive answer: Nếu cả ba lần lấy hàng đều thất bại, phương thức chuyển thành trả tại điểm giao nhận.
 Q4: Ai chịu phí trả hàng khi lỗi thuộc về người bán?
 Gold: Người bán chịu phí vận chuyển trả hàng.
-Filter: {'audience': 'seller'} | answer_rank=1 | points=2/2
+Filter: None | answer_rank=1 | points=2/2
   1. score=0.8585 doc_id=tiktok-return-methods :: . # Trách nhiệm người bán và phí Người bán phải quản lý mọi tùy chọn trả hàng khách đã chọn. Nếu người bán không nhận gói trả lại sau ba lần giao, đơn
   2. score=0.8212 doc_id=tiktok-return-fees :: # Phí vận chuyển trả hàng Nếu lỗi thuộc về nhà bán hàng, nhà bán hàng phải chịu phí vận chuyển trả hàng. Chi phí trả hàng sẽ được tính vào tài khoản T
   3. score=0.7330 doc_id=tiktok-seller-return-refund :: # Kiểm tra hàng trả về Đối với trả hàng lấy tại nhà hoặc gửi tại bưu cục, người bán có 2 ngày dương lịch sau khi nhận sản phẩm để từ chối nếu tình trạ
@@ -42,34 +42,34 @@ Filter: {'audience': 'seller'} | answer_rank=2 | points=1/2
 TOTAL fixed_size_650_overlap_100: 8/10
 
 === recursive_650 | 8 chunks ===
-Q1: Người mua có bao nhiêu ngày để gửi yêu cầu sau khi đơn đã giao?
+Q1: Người mua có bao nhiêu ngày để gửi yêu cầu trả hàng hoàn tiền sau khi nhận hàng?
 Gold: 15 ngày dương lịch sau khi trạng thái đơn hàng được cập nhật thành Đã giao hàng.
 Filter: {'audience': 'buyer'} | answer_rank=1 | points=2/2
-  1. score=0.8469 doc_id=tiktok-buyer-return-refund :: # Thời hạn gửi yêu cầu Người mua có thể gửi yêu cầu trả hàng hoặc hoàn tiền trong vòng mười lăm (15) ngày dương lịch sau khi trạng thái đơn hàng được
-  2. score=0.8316 doc_id=tiktok-buyer-return-refund :: Yêu cầu cần được người bán xử lý trong vòng 1 ngày làm việc kể từ khi người mua gửi. Nếu không có hành động, yêu cầu hoàn tiền sẽ được phê duyệt tự độ
+  1. score=0.8717 doc_id=tiktok-buyer-return-refund :: # Thời hạn gửi yêu cầu Người mua có thể gửi yêu cầu trả hàng hoặc hoàn tiền trong vòng mười lăm (15) ngày dương lịch sau khi trạng thái đơn hàng được
+  2. score=0.8108 doc_id=tiktok-buyer-return-refund :: Yêu cầu cần được người bán xử lý trong vòng 1 ngày làm việc kể từ khi người mua gửi. Nếu không có hành động, yêu cầu hoàn tiền sẽ được phê duyệt tự độ
   Offline extractive answer: Người mua có thể gửi yêu cầu trả hàng hoặc hoàn tiền trong vòng mười lăm (15) ngày dương lịch sau khi trạng thái đơn hàng được cập nhật thành “Đã giao hàng”.
-  A/B unfiltered=['tiktok-buyer-return-refund', 'tiktok-buyer-return-refund', 'tiktok-seller-return-refund']
+  A/B unfiltered=['tiktok-buyer-return-refund', 'tiktok-seller-return-refund', 'tiktok-buyer-return-refund']
   A/B filtered  =['tiktok-buyer-return-refund', 'tiktok-buyer-return-refund']
-Q2: Người bán phải xem xét yêu cầu trả hàng trong thời hạn nào?
+Q2: Người bán phải xem xét và phản hồi yêu cầu trả hàng hoàn tiền trong thời hạn nào?
 Gold: Trong vòng 1 ngày dương lịch; quá hạn yêu cầu tự động được phê duyệt.
 Filter: {'audience': 'seller'} | answer_rank=1 | points=2/2
-  1. score=0.8665 doc_id=tiktok-seller-return-refund :: # Xem xét yêu cầu Người bán phải xem xét yêu cầu trả hàng hoặc hoàn tiền trong vòng 1 ngày dương lịch kể từ khi nhận yêu cầu. Nếu không, yêu cầu được
-  2. score=0.8149 doc_id=tiktok-seller-return-refund :: Đối với trả hàng lấy tại nhà hoặc gửi tại bưu cục, người bán có 2 ngày dương lịch sau khi nhận sản phẩm để từ chối nếu tình trạng không đạt yêu cầu; q
-  3. score=0.8052 doc_id=tiktok-return-methods :: Người bán phải quản lý mọi tùy chọn trả hàng khách đã chọn. Nếu người bán không nhận gói trả lại sau ba lần giao, đơn vị vận chuyển ngừng liên lạc và
+  1. score=0.8672 doc_id=tiktok-seller-return-refund :: # Xem xét yêu cầu Người bán phải xem xét yêu cầu trả hàng hoặc hoàn tiền trong vòng 1 ngày dương lịch kể từ khi nhận yêu cầu. Nếu không, yêu cầu được
+  2. score=0.8199 doc_id=tiktok-seller-return-refund :: Đối với trả hàng lấy tại nhà hoặc gửi tại bưu cục, người bán có 2 ngày dương lịch sau khi nhận sản phẩm để từ chối nếu tình trạng không đạt yêu cầu; q
+  3. score=0.7984 doc_id=tiktok-return-methods :: Người bán phải quản lý mọi tùy chọn trả hàng khách đã chọn. Nếu người bán không nhận gói trả lại sau ba lần giao, đơn vị vận chuyển ngừng liên lạc và
   Offline extractive answer: Người bán phải xem xét yêu cầu trả hàng hoặc hoàn tiền trong vòng 1 ngày dương lịch kể từ khi nhận yêu cầu.
 Q3: Nếu ba lần lấy hàng tại nhà đều thất bại thì điều gì xảy ra?
 Gold: Phương thức chuyển sang trả tại điểm giao nhận.
-Filter: {'audience': 'seller'} | answer_rank=2 | points=1/2
+Filter: None | answer_rank=2 | points=1/2
   1. score=0.7465 doc_id=tiktok-return-methods :: Người bán phải quản lý mọi tùy chọn trả hàng khách đã chọn. Nếu người bán không nhận gói trả lại sau ba lần giao, đơn vị vận chuyển ngừng liên lạc và
   2. score=0.6973 doc_id=tiktok-return-methods :: # Gửi tại điểm giao nhận Khách hàng nên trả lại bưu kiện trong vòng 10 ngày dương lịch sau khi nhà bán hàng phê duyệt lần đầu. # Nhận hàng tại nhà Khá
   3. score=0.6817 doc_id=tiktok-return-fees :: # Phí vận chuyển trả hàng Nếu lỗi thuộc về nhà bán hàng, nhà bán hàng phải chịu phí vận chuyển trả hàng. Chi phí trả hàng sẽ được tính vào tài khoản T
   Offline extractive answer: Nếu cả ba lần lấy hàng đều thất bại, phương thức chuyển thành trả tại điểm giao nhận.
 Q4: Ai chịu phí trả hàng khi lỗi thuộc về người bán?
 Gold: Người bán chịu phí vận chuyển trả hàng.
-Filter: {'audience': 'seller'} | answer_rank=1 | points=2/2
+Filter: None | answer_rank=1 | points=2/2
   1. score=0.8548 doc_id=tiktok-return-methods :: Người bán phải quản lý mọi tùy chọn trả hàng khách đã chọn. Nếu người bán không nhận gói trả lại sau ba lần giao, đơn vị vận chuyển ngừng liên lạc và
   2. score=0.8212 doc_id=tiktok-return-fees :: # Phí vận chuyển trả hàng Nếu lỗi thuộc về nhà bán hàng, nhà bán hàng phải chịu phí vận chuyển trả hàng. Chi phí trả hàng sẽ được tính vào tài khoản T
-  3. score=0.7209 doc_id=tiktok-seller-return-refund :: Đối với trả hàng lấy tại nhà hoặc gửi tại bưu cục, người bán có 2 ngày dương lịch sau khi nhận sản phẩm để từ chối nếu tình trạng không đạt yêu cầu; q
+  3. score=0.7326 doc_id=tiktok-buyer-return-refund :: # Thời hạn gửi yêu cầu Người mua có thể gửi yêu cầu trả hàng hoặc hoàn tiền trong vòng mười lăm (15) ngày dương lịch sau khi trạng thái đơn hàng được
   Offline extractive answer: Nếu lỗi thuộc người bán, người bán chịu phí vận chuyển trả hàng.
 Q5: Người bán có bao nhiêu ngày để khiếu nại yêu cầu chỉ hoàn tiền?
 Gold: 15 ngày dương lịch kể từ khi khoản hoàn tiền được xử lý.
@@ -81,32 +81,32 @@ Filter: {'audience': 'seller'} | answer_rank=1 | points=2/2
 TOTAL recursive_650: 9/10
 
 === heading_650 | 16 chunks ===
-Q1: Người mua có bao nhiêu ngày để gửi yêu cầu sau khi đơn đã giao?
+Q1: Người mua có bao nhiêu ngày để gửi yêu cầu trả hàng hoàn tiền sau khi nhận hàng?
 Gold: 15 ngày dương lịch sau khi trạng thái đơn hàng được cập nhật thành Đã giao hàng.
 Filter: {'audience': 'buyer'} | answer_rank=1 | points=2/2
-  1. score=0.8569 doc_id=tiktok-buyer-return-refund :: # Thời hạn gửi yêu cầu Người mua có thể gửi yêu cầu trả hàng hoặc hoàn tiền trong vòng mười lăm (15) ngày dương lịch sau khi trạng thái đơn hàng được
-  2. score=0.8234 doc_id=tiktok-buyer-return-refund :: # Lưu ý xử lý Yêu cầu cần được người bán xử lý trong vòng 1 ngày làm việc kể từ khi người mua gửi. Nếu không có hành động, yêu cầu hoàn tiền sẽ được p
-  3. score=0.8034 doc_id=tiktok-buyer-return-refund :: # Các trường hợp được yêu cầu Người mua có thể yêu cầu khi không nhận được sản phẩm; sản phẩm không tuân thủ hợp đồng mua bán; giao sai sản phẩm; thiế
+  1. score=0.8766 doc_id=tiktok-buyer-return-refund :: # Thời hạn gửi yêu cầu Người mua có thể gửi yêu cầu trả hàng hoặc hoàn tiền trong vòng mười lăm (15) ngày dương lịch sau khi trạng thái đơn hàng được
+  2. score=0.8010 doc_id=tiktok-buyer-return-refund :: # Lưu ý xử lý Yêu cầu cần được người bán xử lý trong vòng 1 ngày làm việc kể từ khi người mua gửi. Nếu không có hành động, yêu cầu hoàn tiền sẽ được p
+  3. score=0.7746 doc_id=tiktok-buyer-return-refund :: # Các trường hợp được yêu cầu Người mua có thể yêu cầu khi không nhận được sản phẩm; sản phẩm không tuân thủ hợp đồng mua bán; giao sai sản phẩm; thiế
   Gemini grounded answer: Người mua có thể gửi yêu cầu trả hàng hoặc hoàn tiền trong vòng mười lăm (15) ngày dương lịch sau khi trạng thái đơn hàng được cập nhật thành “Đã giao hàng” [1].
-  A/B unfiltered=['tiktok-buyer-return-refund', 'tiktok-seller-return-refund', 'tiktok-buyer-return-refund']
+  A/B unfiltered=['tiktok-buyer-return-refund', 'tiktok-seller-return-refund', 'tiktok-seller-return-refund']
   A/B filtered  =['tiktok-buyer-return-refund', 'tiktok-buyer-return-refund', 'tiktok-buyer-return-refund']
-Q2: Người bán phải xem xét yêu cầu trả hàng trong thời hạn nào?
+Q2: Người bán phải xem xét và phản hồi yêu cầu trả hàng hoàn tiền trong thời hạn nào?
 Gold: Trong vòng 1 ngày dương lịch; quá hạn yêu cầu tự động được phê duyệt.
 Filter: {'audience': 'seller'} | answer_rank=1 | points=2/2
-  1. score=0.8681 doc_id=tiktok-seller-return-refund :: # Xem xét yêu cầu Người bán phải xem xét yêu cầu trả hàng hoặc hoàn tiền trong vòng 1 ngày dương lịch kể từ khi nhận yêu cầu. Nếu không, yêu cầu được
-  2. score=0.8452 doc_id=tiktok-seller-return-refund :: # Kiểm tra hàng trả về Đối với trả hàng lấy tại nhà hoặc gửi tại bưu cục, người bán có 2 ngày dương lịch sau khi nhận sản phẩm để từ chối nếu tình trạ
-  3. score=0.8076 doc_id=tiktok-seller-return-refund :: # Thời hạn gửi hàng trả Với lấy hàng tại nhà, ngày lấy hàng phải được chọn trong vòng 3 ngày dương lịch. Với gửi tại bưu cục, đơn hàng phải được gửi t
-  Gemini grounded answer: Người bán phải xem xét yêu cầu trả hàng hoặc hoàn tiền trong vòng 1 ngày dương lịch kể từ khi nhận được yêu cầu. Nếu không xem xét trong thời hạn này, yêu cầu sẽ tự động được phê duyệt [1].
+  1. score=0.8747 doc_id=tiktok-seller-return-refund :: # Xem xét yêu cầu Người bán phải xem xét yêu cầu trả hàng hoặc hoàn tiền trong vòng 1 ngày dương lịch kể từ khi nhận yêu cầu. Nếu không, yêu cầu được
+  2. score=0.8324 doc_id=tiktok-seller-return-refund :: # Kiểm tra hàng trả về Đối với trả hàng lấy tại nhà hoặc gửi tại bưu cục, người bán có 2 ngày dương lịch sau khi nhận sản phẩm để từ chối nếu tình trạ
+  3. score=0.8099 doc_id=tiktok-seller-return-refund :: # Khiếu nại Người bán có thể khiếu nại yêu cầu chỉ hoàn tiền trong vòng 15 ngày kể từ khi hoàn tiền được xử lý; với hàng gửi tại bưu cục hoặc lấy tại
+  Gemini grounded answer: Người bán phải xem xét yêu cầu trả hàng hoặc hoàn tiền trong vòng 1 ngày dương lịch kể từ khi nhận được yêu cầu [1]. Nếu không thực hiện trong thời hạn này, yêu cầu sẽ tự động được phê duyệt [1].
 Q3: Nếu ba lần lấy hàng tại nhà đều thất bại thì điều gì xảy ra?
 Gold: Phương thức chuyển sang trả tại điểm giao nhận.
-Filter: {'audience': 'seller'} | answer_rank=1 | points=2/2
+Filter: None | answer_rank=1 | points=2/2
   1. score=0.8257 doc_id=tiktok-return-methods :: # Nhận hàng tại nhà Khách hàng có 10 ngày dương lịch để chọn ngày lấy hàng và có ba lần giao bưu kiện cho nhân viên vận chuyển. Nếu cả ba lần lấy hàng
   2. score=0.7789 doc_id=tiktok-return-fees :: # Giao kiện hàng trả lại cho người bán Với dịch vụ trả tại điểm giao nhận hoặc nhận tại nhà, nếu nhà bán hàng không nhận gói hàng trả lại sau ba lần g
   3. score=0.7169 doc_id=tiktok-seller-return-refund :: # Thời hạn gửi hàng trả Với lấy hàng tại nhà, ngày lấy hàng phải được chọn trong vòng 3 ngày dương lịch. Với gửi tại bưu cục, đơn hàng phải được gửi t
   Gemini grounded answer: Nếu cả ba lần lấy hàng tại nhà đều thất bại, phương thức trả hàng sẽ chuyển thành trả tại điểm giao nhận và khách hàng vẫn phải trả bưu kiện trong vòng 10 ngày dương lịch [1].
 Q4: Ai chịu phí trả hàng khi lỗi thuộc về người bán?
 Gold: Người bán chịu phí vận chuyển trả hàng.
-Filter: {'audience': 'seller'} | answer_rank=1 | points=2/2
+Filter: None | answer_rank=1 | points=2/2
   1. score=0.8709 doc_id=tiktok-return-methods :: # Trách nhiệm người bán và phí Người bán phải quản lý mọi tùy chọn trả hàng khách đã chọn. Nếu người bán không nhận gói trả lại sau ba lần giao, đơn v
   2. score=0.8466 doc_id=tiktok-return-fees :: # Phí vận chuyển trả hàng Nếu lỗi thuộc về nhà bán hàng, nhà bán hàng phải chịu phí vận chuyển trả hàng. Chi phí trả hàng sẽ được tính vào tài khoản T
   3. score=0.7393 doc_id=tiktok-seller-return-refund :: # Kiểm tra hàng trả về Đối với trả hàng lấy tại nhà hoặc gửi tại bưu cục, người bán có 2 ngày dương lịch sau khi nhận sản phẩm để từ chối nếu tình trạ

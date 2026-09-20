@@ -45,13 +45,13 @@ Heading phù hợp nhất vì tiêu đề chính sách là ranh giới ngữ ngh
 
 | # | Query | Gold answer | Chunk |
 |---|---|---|---|
-| 1 | Người mua có bao nhiêu ngày sau khi đơn đã giao? | 15 ngày | buyer-return-refund / Thời hạn |
-| 2 | Người bán xem xét yêu cầu trong bao lâu? | 1 ngày; quá hạn tự duyệt | seller-return-refund / Xem xét |
-| 3 | Ba lần lấy hàng thất bại? | Chuyển sang điểm giao nhận | return-methods / Nhận tại nhà |
-| 4 | Ai chịu phí khi lỗi thuộc người bán? | Người bán | return-methods / Trách nhiệm và phí |
-| 5 | Người bán có bao nhiêu ngày khiếu nại yêu cầu chỉ hoàn tiền? | 15 ngày dương lịch | seller-appeals / Khiếu nại chỉ hoàn tiền |
+| 1 | Người mua có bao nhiêu ngày để gửi yêu cầu trả hàng hoàn tiền sau khi nhận hàng? (`audience=buyer`) | 15 ngày dương lịch sau khi trạng thái đơn được cập nhật thành Đã giao hàng | buyer-return-refund / Thời hạn |
+| 2 | Người bán phải xem xét và phản hồi yêu cầu trả hàng hoàn tiền trong thời hạn nào? (`audience=seller`) | Trong vòng 1 ngày dương lịch; quá hạn yêu cầu tự động được phê duyệt | seller-return-refund / Xem xét |
+| 3 | Nếu ba lần lấy hàng tại nhà đều thất bại thì điều gì xảy ra? | Phương thức chuyển sang trả tại điểm giao nhận | return-methods / Nhận tại nhà |
+| 4 | Ai chịu phí trả hàng khi lỗi thuộc về người bán? | Người bán chịu phí vận chuyển trả hàng | return-methods / Trách nhiệm và phí |
+| 5 | Người bán có bao nhiêu ngày để khiếu nại yêu cầu chỉ hoàn tiền? (`audience=seller`) | 15 ngày dương lịch kể từ khi khoản hoàn tiền được xử lý | seller-appeals / Khiếu nại chỉ hoàn tiền |
 
-Với heading, mọi query có đáp án ở top-1. Benchmark đưa kết quả đã lọc qua `KnowledgeBaseAgent.answer()`, nơi prompt được dựng từ các chunk và `llm_fn` gọi `gemini-3.6-flash`; model trả lời đúng, có trích dẫn cho cả 5 câu. A/B câu 1: không filter, top-3 có cả chunk seller; với `audience=buyer`, cả ba đều đúng tài liệu buyer. Filter tăng precision nhưng có thể giảm recall nếu metadata bị gán quá hẹp.
+Với heading, mọi query có đáp án ở top-1. Câu 1, 2 và 5 dùng filter đúng theo bộ câu hỏi; câu 3–4 không filter. Benchmark đưa kết quả qua `KnowledgeBaseAgent.answer()`, nơi prompt được dựng từ các chunk và `llm_fn` gọi `gemini-3.6-flash`; model trả lời đúng, có trích dẫn cho cả 5 câu. A/B câu 1: không filter, top-3 có cả chunk seller; với `audience=buyer`, cả ba đều đúng tài liệu buyer.
 
 Benchmark chính thức dùng semantic embedding `gemini-embedding-001` và model sinh câu trả lời `gemini-3.6-flash`. `bench.py` vẫn có lexical fallback để chạy offline, nhưng số liệu trong báo cáo và `ket_qua_benchmark.txt` là kết quả Gemini thật.
 
