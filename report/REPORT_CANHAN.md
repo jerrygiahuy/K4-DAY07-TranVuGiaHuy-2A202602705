@@ -2,7 +2,7 @@
 
 **Họ tên:** Trần Vũ Gia Huy
 
-**MSSV:** 2A20262705
+**MSSV:** 2A202602705
 
 **Nhóm:** TikTok Shop Policy Retrieval
 **Ngày:** 20/09/2026

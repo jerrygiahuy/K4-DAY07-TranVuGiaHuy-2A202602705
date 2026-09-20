@@ -4,7 +4,7 @@
 
 **Thành viên:**
 
-- Trần Vũ Gia Huy — 2A20262705
+- Trần Vũ Gia Huy — 2A202602705
 - Cao Đức Hiệp — 2A202602550
 - Trần Mạnh Hùng — 2A202602708
 **Ngày:** 20/09/2026
