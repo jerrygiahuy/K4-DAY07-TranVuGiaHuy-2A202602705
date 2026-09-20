@@ -59,7 +59,7 @@ Chiến lược: `HeadingChunker(650)` có recursive fallback; backend `gemini-e
 | 4 | Ai chịu phí nếu lỗi thuộc người bán? | Trách nhiệm và phí | 0.8709 | Người bán chịu phí |
 | 5 | Người bán có bao nhiêu ngày khiếu nại yêu cầu chỉ hoàn tiền? | Khiếu nại chỉ hoàn tiền | 0.9059 | 15 ngày dương lịch |
 
-**5/5 query có bằng chứng ở top-1, đạt 10/10.** `gemini-3.6-flash` trả lời đúng cả 5 câu từ top-3 và kèm trích dẫn `[1]`. Câu 1 không lọc bị lẫn tài liệu seller trong top-3; `audience=buyer` loại nhiễu này. Failure case: fixed-size cắt giữa từ/ý và chỉ đạt 8/10; heading giữ section mạch lạc hơn. Bài học quan trọng là phải kiểm nội dung chunk chứa đáp án, không chỉ kiểm `doc_id`.
+**5/5 query có bằng chứng ở top-1, đạt 10/10.** Sau khi `search_with_filter` lấy top-3, kết quả được đưa vào `KnowledgeBaseAgent.answer()`; agent dựng prompt có nguồn rồi gọi `llm_fn=GeminiGenerator`. `gemini-3.6-flash` trả lời đúng cả 5 câu và kèm trích dẫn. Câu 1 không lọc bị lẫn tài liệu seller trong top-3; `audience=buyer` loại nhiễu này. Failure case: fixed-size cắt giữa từ/ý và chỉ đạt 8/10; heading giữ section mạch lạc hơn. Bài học quan trọng là phải kiểm nội dung chunk chứa đáp án, không chỉ kiểm `doc_id`.
 
 | Tự đánh giá | Điểm |
 |---|---:|

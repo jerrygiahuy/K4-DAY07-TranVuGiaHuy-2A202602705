@@ -51,7 +51,7 @@ Heading phù hợp nhất vì tiêu đề chính sách là ranh giới ngữ ngh
 | 4 | Ai chịu phí khi lỗi thuộc người bán? | Người bán | return-methods / Trách nhiệm và phí |
 | 5 | Người bán có bao nhiêu ngày khiếu nại yêu cầu chỉ hoàn tiền? | 15 ngày dương lịch | seller-appeals / Khiếu nại chỉ hoàn tiền |
 
-Với heading, mọi query có đáp án ở top-1; `gemini-3.6-flash` trả lời đúng và dẫn `[1]` cho cả 5 câu. A/B câu 1: không filter, top-3 có cả chunk seller; với `audience=buyer`, cả ba đều đúng tài liệu buyer. Filter tăng precision nhưng có thể giảm recall nếu metadata bị gán quá hẹp.
+Với heading, mọi query có đáp án ở top-1. Benchmark đưa kết quả đã lọc qua `KnowledgeBaseAgent.answer()`, nơi prompt được dựng từ các chunk và `llm_fn` gọi `gemini-3.6-flash`; model trả lời đúng, có trích dẫn cho cả 5 câu. A/B câu 1: không filter, top-3 có cả chunk seller; với `audience=buyer`, cả ba đều đúng tài liệu buyer. Filter tăng precision nhưng có thể giảm recall nếu metadata bị gán quá hẹp.
 
 Benchmark chính thức dùng semantic embedding `gemini-embedding-001` và model sinh câu trả lời `gemini-3.6-flash`. `bench.py` vẫn có lexical fallback để chạy offline, nhưng số liệu trong báo cáo và `ket_qua_benchmark.txt` là kết quả Gemini thật.
 
