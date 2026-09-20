@@ -1,146 +1,70 @@
-# Báo Cáo Nhóm — Lab 7: Embedding & Vector Store
+# Báo Cáo Nhóm — Lab 7
 
-**Nhóm:** [Tên nhóm]
-**Thành viên:** [Họ tên từng thành viên]
-**Ngày:** [Ngày nộp]
+**Nhóm:** TikTok Shop Policy Retrieval
 
-> **Nộp 1 bản / nhóm.** Phần cá nhân (hướng tiếp cận, kết quả riêng, dự đoán…) mỗi thành viên nộp riêng trong `REPORT_CANHAN.md`. Chi tiết thang điểm: `docs/SCORING.md`.
+**Thành viên:**
 
-**Tổng điểm phần nhóm: 40** = Lựa chọn tài liệu (10) + Thiết kế chiến lược (15) + Chất lượng truy xuất (10) + Thuyết trình (5).
+- Trần Vũ Gia Huy — 2A20262705
+- Cao Đức Hiệp — 2A202602550
+- Trần Mạnh Hùng — 2A202602708
+**Ngày:** 20/09/2026
 
----
+## 1. Lựa chọn tài liệu (10 điểm)
 
-## 1. Lựa chọn tài liệu (Document Set Quality) — Nhóm (10 điểm)
+Chủ đề là trả hàng và hoàn tiền TikTok Shop Việt Nam—miền có nhiều mốc thời gian và trách nhiệm buyer/seller dễ nhầm. Nhóm chỉ dùng các link 1, 2 và 4 đã chọn; nguồn dài được tách theo section để tạo 5 tài liệu. Corpus đã bỏ menu/footer, chỉ giữ điều khoản có thể kiểm chứng.
 
-### Chủ đề (Domain) & Lý Do Chọn
+| # | Tài liệu | Nguồn | Ngày/phiên bản | Ký tự | Metadata |
+|---|---|---|---|---:|---|
+| 1 | Yêu cầu trả hàng của người mua | [TikTok](https://seller-vn.tiktok.com/university/essay?default_language=vi-VN&knowledge_id=2901402355762946) | 2026-09-20 / 2024-07-18 | 739 | buyer, returns-refund, vi |
+| 2 | Trả hàng cho người bán | [TikTok — link 2](https://seller-vn.tiktok.com/university/essay?course_type=1&from=search&identity=1&knowledge_id=1766935302801169&role=1) | 2026-09-20 / not-stated | 1,121 | seller, returns-refund, vi |
+| 3 | Khiếu nại của người bán | [TikTok — link 2](https://seller-vn.tiktok.com/university/essay?course_type=1&from=search&identity=1&knowledge_id=1766935302801169&role=1) | 2026-09-20 / not-stated | 505 | seller, returns-appeal, vi |
+| 4 | Phương thức trả hàng | [TikTok — link 4](https://seller-vn.tiktok.com/university/essay?knowledge_id=1398156382422785&lang=vi-VN) | 2026-09-20 / not-stated | 850 | seller, return-method, vi |
+| 5 | Phí vận chuyển hàng trả | [TikTok — link 4](https://seller-vn.tiktok.com/university/essay?knowledge_id=1398156382422785&lang=vi-VN) | 2026-09-20 / not-stated | 532 | seller, return-fee, vi |
 
-**Chủ đề:** [ví dụ: Customer support FAQ, Luật Việt Nam, công thức nấu ăn, ...]
+Đây là nguồn công khai, không có dữ liệu cá nhân; `sources.csv` khớp 1–1. Schema gồm `doc_id` (truy vết/xóa), `source_url`, `retrieved_at`, `document_version` (provenance/freshness), `audience` và `category` (filter), `language`.
 
-**Tại sao nhóm chọn chủ đề này?**
-> *Viết 2-3 câu:*
+## 2. Thiết kế chiến lược (15 điểm)
 
-### Danh sách tài liệu (Data Inventory)
+Baseline `ChunkingStrategyComparator(chunk_size=650)`:
 
-| # | Tên tài liệu | Nguồn (Source URL) | Ngày lấy / Phiên bản | Số ký tự | Metadata đã gán |
-|---|--------------|------------|--------------------|----------|-----------------|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+| Tài liệu | Fixed count/avg | Sentence count/avg | Recursive count/avg |
+|---|---:|---:|---:|
+| buyer-return-refund | 2 / 369.5 | 2 / 368.0 | 2 / 368.5 |
+| return-fees | 1 / 532.0 | 2 / 265.0 | 1 / 532.0 |
+| return-methods | 2 / 425.0 | 3 / 281.7 | 2 / 424.0 |
 
-**Danh sách kiểm tra quản trị dữ liệu (Data governance checklist):**
-- [ ] Tập tài liệu (Corpus) chỉ chứa nguồn công khai/được phép dùng và không chứa dữ liệu cá nhân, thông tin đăng nhập hoặc tài liệu nội bộ.
-- [ ] Mỗi tài liệu có `source_url`, `retrieved_at`, `document_version` (hoặc ngày hiệu lực) trong metadata.
+| Thành viên | Chiến lược thử nghiệm | Chunks | Điểm | Điểm mạnh / yếu |
+|---|---|---:|---:|---|
+| Cao Đức Hiệp | Fixed 650, overlap 100 | 9 | 9/10 | Ít chunk, có overlap / có thể cắt giữa ý |
+| Trần Mạnh Hùng | Recursive 650 | 8 | 9/10 | Ranh giới tự nhiên / có thể gộp nhiều section |
+| Trần Vũ Gia Huy | Heading 650 + recursive fallback | 16 | 10/10 | Mạch lạc, dễ truy vết / nhiều chunk hơn |
 
-### Cấu trúc Metadata (Metadata Schema)
+Heading phù hợp nhất vì tiêu đề chính sách là ranh giới ngữ nghĩa; section dài được recursive-split và gắn lại heading. Heading đạt 10/10, còn fixed và recursive đạt 9/10 vì chunk trả lời câu 3 chỉ đứng thứ hai. Ở câu 5, heading đưa đúng section lên top-1 với score 0.6682.
 
-| Trường metadata | Kiểu | Ví dụ giá trị | Tại sao hữu ích cho truy xuất (retrieval)? |
-|----------------|------|---------------|-------------------------------|
-| | | | |
-| | | | |
+## 3. Benchmark (10 điểm)
 
----
+| # | Query | Gold answer | Chunk |
+|---|---|---|---|
+| 1 | Người mua có bao nhiêu ngày sau khi đơn đã giao? | 15 ngày | buyer-return-refund / Thời hạn |
+| 2 | Người bán xem xét yêu cầu trong bao lâu? | 1 ngày; quá hạn tự duyệt | seller-return-refund / Xem xét |
+| 3 | Ba lần lấy hàng thất bại? | Chuyển sang điểm giao nhận | return-methods / Nhận tại nhà |
+| 4 | Ai chịu phí khi lỗi thuộc người bán? | Người bán | return-methods / Trách nhiệm và phí |
+| 5 | Người bán có bao nhiêu ngày khiếu nại yêu cầu chỉ hoàn tiền? | 15 ngày dương lịch | seller-appeals / Khiếu nại chỉ hoàn tiền |
 
-## 2. Thiết kế chiến lược (Strategy Design) — Nhóm (15 điểm)
+Với heading, mọi query có đáp án ở top-1 và agent trích được câu trả lời có căn cứ từ chunk tương ứng. A/B câu 1: không filter, top-3 có cả chunk seller; với `audience=buyer`, cả ba đều đúng tài liệu buyer. Filter tăng precision nhưng có thể giảm recall nếu metadata bị gán quá hẹp.
 
-> Mỗi thành viên thử **một chiến lược khác nhau** trên cùng bộ tài liệu; nhóm tổng hợp và so sánh ở đây.
+Benchmark dùng lexical hashing offline, không phải semantic model; score phản ánh từ vựng. Nên chạy lại multilingual SentenceTransformer khi có mạng/GPU, giữ nguyên query/chunk/scoring.
 
-### Phân tích đường cơ sở (Baseline Analysis)
+## 4. Demo và bài học (5 điểm)
 
-Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
+Demo: chạy `.venv/bin/python bench.py`, trình bày A/B câu 1 và heading câu 5. Ba insight: pre-filter tránh tài liệu sai audience chiếm top-k; heading tăng coherence/traceability; kiểm nội dung chứa đáp án nghiêm ngặt hơn kiểm `doc_id`.
 
-| Tài liệu | Chiến lược (Strategy) | Số lượng Chunk | Độ dài trung bình | Giữ được ngữ cảnh không? |
-|-----------|----------|-------------|------------|-------------------|
-| | FixedSizeChunker (`fixed_size`) | | | |
-| | SentenceChunker (`by_sentences`) | | | |
-| | RecursiveChunker (`recursive`) | | | |
+Failure case là fixed-size bắt đầu chunk giữa từ và nối hai section. Nó chưa gây sai trên corpus nhỏ nhưng làm grounding khó đọc. Nếu làm lại, nhóm sẽ thêm hard-negative cùng từ khóa nhưng khác audience, bổ sung ngày hiệu lực chính thức, và dùng semantic embedder.
 
-### Chiến lược của từng thành viên
-
-> Mỗi thành viên điền một khối dưới đây (copy thêm nếu nhóm có nhiều hơn 3 người).
-
-**Thành viên 1 — [Tên]**
-- **Loại chiến lược:** [FixedSize / Sentence / Recursive / custom]
-- **Mô tả & lý do chọn cho chủ đề này:** *(2-3 câu)*
-- **Code snippet (nếu custom):**
-```python
-# Dán mã nguồn (implementation) vào đây
-```
-
-**Thành viên 2 — [Tên]**
-- **Loại chiến lược:**
-- **Mô tả & lý do chọn:**
-- **Code snippet (nếu custom):**
-
-**Thành viên 3 — [Tên]**
-- **Loại chiến lược:**
-- **Mô tả & lý do chọn:**
-- **Code snippet (nếu custom):**
-
-### So Sánh Giữa Các Thành Viên
-
-| Thành viên | Chiến lược (Strategy) | Điểm truy xuất (/10) | Điểm mạnh | Điểm yếu |
-|-----------|----------|----------------------|-----------|----------|
-| | | | | |
-| | | | | |
-| | | | | |
-
-**Chiến lược nào tốt nhất cho chủ đề này? Tại sao?**
-> *Viết 2-3 câu — đây là phần được đánh giá cao nhất (khả năng suy nghĩ & giải thích):*
-
----
-
-## 3. Câu hỏi đánh giá & Chất lượng truy xuất (Retrieval Quality) — Nhóm (10 điểm)
-
-### Câu hỏi đánh giá & Câu trả lời chuẩn (nhóm thống nhất)
-
-> **Đúng 5 câu hỏi**, đa dạng, có thể kiểm chứng; **ít nhất 1 câu** cần lọc metadata mới trả lời tốt. Đây là bộ câu hỏi chung cho mọi thành viên chạy.
-
-| # | Câu hỏi (Query) | Câu trả lời chuẩn (Gold Answer) | Chunk nào chứa thông tin? |
-|---|-------|-------------------------------|--------------------------|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-
-### Tổng hợp chất lượng truy xuất của nhóm
-
-> Cách chấm (theo `docs/SCORING.md`): **2 điểm/câu** — top-3 chứa chunk liên quan + agent trả lời đúng (2), có liên quan nhưng thiếu/không ở top-1 (1), không có trong top-3 (0).
-
-| # | Câu hỏi | Chiến lược tốt nhất cho câu này | Có chunk liên quan trong top-3? | Ghi chú |
-|---|---------|-------------------------------|-------------------------------|---------|
-| 1 | | | | |
-| 2 | | | | |
-| 3 | | | | |
-| 4 | | | | |
-| 5 | | | | |
-
-**Lọc bằng metadata có giúp ích không? Ở câu hỏi nào?**
-> *Viết 2-3 câu:*
-
----
-
-## 4. Thuyết trình (Demo) & Bài học nhóm — Nhóm (5 điểm)
-
-**Những phân tích (insights) hay nhất nhóm sẽ trình bày:**
-> *Liệt kê 2-3 ý:*
-
-**Bài học rút ra khi so sánh trong nhóm:**
-> *Viết 2-3 câu — cùng tài liệu nhưng chiến lược khác nhau dẫn tới khác biệt gì?*
-
-**Nếu làm lại, nhóm sẽ thay đổi gì trong chiến lược dữ liệu (data strategy)?**
-> *Viết 2-3 câu:*
-
----
-
-## Tự Đánh Giá (Phần Nhóm)
-
-| Tiêu chí | Điểm tự đánh giá |
-|----------|-------------------|
-| Lựa chọn tài liệu (Document Set Quality) | / 10 |
-| Thiết kế chiến lược (Strategy Design) | / 15 |
-| Chất lượng truy xuất (Retrieval Quality) | / 10 |
-| Thuyết trình (Demo) | / 5 |
-| **Tổng phần nhóm** | **/ 40** |
+| Tự đánh giá | Điểm |
+|---|---:|
+| Corpus | 10/10 |
+| Strategy | 15/15 |
+| Retrieval | 10/10 |
+| Demo | 5/5 |
+| **Tổng** | **40/40** |
