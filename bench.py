@@ -3,16 +3,23 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import math
+import os
 import re
+import sys
+import time
 import unicodedata
 from pathlib import Path
 
-from src import Document, EmbeddingStore, FixedSizeChunker, RecursiveChunker
+from dotenv import load_dotenv
+
+from src import Document, EmbeddingStore, FixedSizeChunker, GeminiEmbedder, RecursiveChunker
 
 
 DATA_DIR = Path("data/tiktokshop-policy")
 OUTPUT_PATH = Path("ket_qua_benchmark.txt")
+GEMINI_GENERATION_MODEL = "gemini-3.6-flash"
 
 BENCHMARKS = [
     {
@@ -76,6 +83,82 @@ class LexicalEmbedder:
         return [value / norm for value in vector]
 
 
+class CachedEmbedder:
+    """Avoid repeated paid/network calls for identical text during one run."""
+
+    def __init__(self, embedder: object, cache_path: Path | None = None) -> None:
+        self.embedder = embedder
+        self.cache_path = cache_path
+        self.cache: dict[str, list[float]] = {}
+        if cache_path and cache_path.exists():
+            self.cache = json.loads(cache_path.read_text(encoding="utf-8"))
+        self._backend_name = getattr(embedder, "_backend_name", embedder.__class__.__name__)
+
+    def __call__(self, text: str) -> list[float]:
+        if text not in self.cache:
+            last_error: Exception | None = None
+            for attempt in range(3):
+                try:
+                    self.cache[text] = self.embedder(text)
+                    break
+                except Exception as error:
+                    last_error = error
+                    if attempt < 2:
+                        time.sleep(1 + attempt)
+            else:
+                assert last_error is not None
+                raise last_error
+            if self.cache_path:
+                self.cache_path.write_text(
+                    json.dumps(self.cache, ensure_ascii=False), encoding="utf-8"
+                )
+        return self.cache[text]
+
+
+class GeminiGenerator:
+    """Small callable adapter used by the RAG benchmark."""
+
+    def __init__(self, model: str = GEMINI_GENERATION_MODEL) -> None:
+        from google import genai
+        from google.genai import types
+
+        self.client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        self.model = model
+        self.config = types.GenerateContentConfig(
+            temperature=0,
+            max_output_tokens=512,
+            thinking_config=types.ThinkingConfig(thinking_level="LOW"),
+        )
+        self.cache_path = Path(".gemini_generation_cache.json")
+        self.cache: dict[str, str] = {}
+        if self.cache_path.exists():
+            self.cache = json.loads(self.cache_path.read_text(encoding="utf-8"))
+
+    def __call__(self, prompt: str) -> str:
+        if prompt in self.cache:
+            return self.cache[prompt]
+        last_error: Exception | None = None
+        for attempt in range(3):
+            try:
+                response = self.client.models.generate_content(
+                    model=self.model,
+                    contents=prompt,
+                    config=self.config,
+                )
+                answer = (response.text or "Không có phản hồi từ mô hình.").strip()
+                self.cache[prompt] = answer
+                self.cache_path.write_text(
+                    json.dumps(self.cache, ensure_ascii=False, indent=2), encoding="utf-8"
+                )
+                return answer
+            except Exception as error:
+                last_error = error
+                if attempt < 2:
+                    time.sleep(1 + attempt)
+        assert last_error is not None
+        raise last_error
+
+
 class HeadingChunker:
     """Keep each Markdown section coherent; recursively split long sections."""
 
@@ -113,8 +196,8 @@ def parse_document(path: Path) -> tuple[dict[str, str], str]:
     return metadata, match.group(2).strip()
 
 
-def load_corpus(chunker: object) -> tuple[EmbeddingStore, int]:
-    store = EmbeddingStore("tiktokshop_policy", embedding_fn=LexicalEmbedder())
+def load_corpus(chunker: object, embedder: object) -> tuple[EmbeddingStore, int]:
+    store = EmbeddingStore("tiktokshop_policy", embedding_fn=embedder)
     docs: list[Document] = []
     for path in sorted(DATA_DIR.glob("*.md")):
         metadata, content = parse_document(path)
@@ -138,8 +221,8 @@ def extract_grounded_answer(content: str, needle: str) -> str:
     return "Không tìm thấy câu trả lời có căn cứ trong top-3."
 
 
-def evaluate(name: str, chunker: object) -> tuple[list[str], int]:
-    store, chunk_count = load_corpus(chunker)
+def evaluate(name: str, chunker: object, embedder: object, generator: object | None) -> tuple[list[str], int]:
+    store, chunk_count = load_corpus(chunker, embedder)
     lines = [f"\n=== {name} | {chunk_count} chunks ==="]
     total = 0
     for number, item in enumerate(BENCHMARKS, start=1):
@@ -154,15 +237,30 @@ def evaluate(name: str, chunker: object) -> tuple[list[str], int]:
         lines.append(f"Gold: {item['gold']}")
         lines.append(f"Filter: {item['filter']} | answer_rank={answer_rank} | points={points}/2")
         for rank, result in enumerate(results, start=1):
-            preview = " ".join(result["content"].split())[:150]
+            preview = " ".join(result["content"].split())[:150].rstrip()
             lines.append(
                 f"  {rank}. score={result['score']:.4f} doc_id={result['metadata']['doc_id']} :: {preview}"
             )
-        if answer_rank is not None:
+        if generator is not None and results:
+            context = "\n\n".join(
+                f"[{rank}] {result['content']}" for rank, result in enumerate(results, start=1)
+            )
+            print(f"Generating Gemini answer for {name} Q{number}...", file=sys.stderr, flush=True)
+            answer = generator(
+                "PROMPT_VERSION_2. Chỉ trả lời đúng câu hỏi bằng thông tin trong ngữ cảnh, "
+                "ưu tiên kết quả xếp hạng [1], và kèm trích dẫn [n]. Không chọn thời hạn "
+                "của một nghiệp vụ khác. Nếu không đủ thông tin, nói rõ không tìm thấy.\n\n"
+                f"NGỮ CẢNH:\n{context}\n\nCÂU HỎI: {item['query']}"
+            )
+            print(f"Completed Gemini answer for {name} Q{number}.", file=sys.stderr, flush=True)
+            answer_label = "Gemini grounded answer"
+        elif answer_rank is not None:
             answer = extract_grounded_answer(results[answer_rank - 1]["content"], item["needle"])
+            answer_label = "Offline extractive answer"
         else:
             answer = "Không tìm thấy câu trả lời có căn cứ trong top-3."
-        lines.append(f"  Agent answer (extractive, grounded): {answer}")
+            answer_label = "Offline extractive answer"
+        lines.append(f"  {answer_label}: {answer}")
 
         if number == 1:
             unfiltered = store.search(item["query"], 3)
@@ -175,6 +273,22 @@ def evaluate(name: str, chunker: object) -> tuple[list[str], int]:
 
 
 def main() -> None:
+    load_dotenv(override=False)
+    use_gemini = os.getenv("EMBEDDING_PROVIDER", "lexical").strip().lower() == "gemini"
+    if use_gemini:
+        if not os.getenv("GEMINI_API_KEY"):
+            raise RuntimeError("EMBEDDING_PROVIDER=gemini nhưng thiếu GEMINI_API_KEY trong .env")
+        embedder = CachedEmbedder(
+            GeminiEmbedder(os.getenv("GEMINI_EMBEDDING_MODEL", "gemini-embedding-001")),
+            Path(".gemini_embedding_cache.json"),
+        )
+        generator = GeminiGenerator(os.getenv("GEMINI_GENERATION_MODEL", GEMINI_GENERATION_MODEL))
+        backend_note = f"Gemini embedding + {generator.model}"
+    else:
+        embedder = CachedEmbedder(LexicalEmbedder())
+        generator = None
+        backend_note = "normalized lexical hashing (offline fallback)"
+
     strategies = {
         "fixed_size_650_overlap_100": FixedSizeChunker(chunk_size=650, overlap=100),
         "recursive_650": RecursiveChunker(chunk_size=650),
@@ -182,12 +296,16 @@ def main() -> None:
     }
     output = [
         "BENCHMARK CHÍNH SÁCH TIKTOK SHOP",
-        "Embedding: normalized lexical hashing (không phải semantic model)",
+        f"Backend: {backend_note}",
         "Scoring: 2 điểm nếu chunk chứa đáp án ở top-1; 1 điểm ở top-2/3; 0 nếu vắng.",
     ]
     scores: dict[str, int] = {}
     for name, chunker in strategies.items():
-        lines, score = evaluate(name, chunker)
+        # The personal Heading strategy receives real Gemini answers. The two
+        # comparison baselines use the deterministic extractive evaluator to
+        # avoid spending API quota on identical evaluation questions.
+        strategy_generator = generator if name == "heading_650" else None
+        lines, score = evaluate(name, chunker, embedder, strategy_generator)
         output.extend(lines)
         scores[name] = score
     output.append(f"\nSUMMARY: {scores}")

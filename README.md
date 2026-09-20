@@ -91,6 +91,7 @@ Dùng khi bạn không có OpenAI API key — Gemini API key lấy miễn phí t
 ```bash
 pip install google-genai
 export GEMINI_API_KEY=your-key-here
+export GEMINI_GENERATION_MODEL=gemini-3.6-flash
 python3 - <<'PY'
 from src import GeminiEmbedder
 embedder = GeminiEmbedder()
@@ -100,6 +101,7 @@ PY
 ```
 
 - Mô hình mặc định cho lựa chọn này là `gemini-embedding-001`
+- Mô hình sinh câu trả lời dùng cho benchmark RAG là `gemini-3.6-flash`
 - Có thể đổi mô hình bằng cách:
 ```bash
 export GEMINI_EMBEDDING_MODEL=gemini-embedding-001

@@ -35,31 +35,31 @@ tests/test_solution.py .......................................... [100%]
 
 ## 4. Dự đoán similarity (5 điểm)
 
-Điểm dùng `LexicalEmbedder` chuẩn hóa trong `bench.py` (baseline từ vựng tái lập được, không phải semantic model).
+Điểm được tính bằng `gemini-embedding-001`, tức semantic embedding đa ngữ dùng trong benchmark chính thức.
 
 | # | Cặp câu (rút gọn) | Dự đoán | Thực tế | Đúng? |
 |---|---|---|---:|---|
-| 1 | Người mua hoàn tiền trong 15 ngày / Khách hàng có 15 ngày trả hàng | cao | 0.2372 | Có, thấp hơn kỳ vọng |
-| 2 | Người bán chịu phí trả hàng / Phí gửi trả do nhà bán hàng trả | cao | 0.4714 | Có |
-| 3 | Người bán phản hồi một ngày / Tự động duyệt nếu quá hạn | trung bình | 0.2132 | Có |
-| 4 | Sản phẩm còn bảo hành / Trời mưa lớn | thấp | 0.0000 | Có |
-| 5 | Trả tại điểm giao nhận / Python là ngôn ngữ lập trình | thấp | 0.0000 | Có |
+| 1 | Người mua hoàn tiền trong 15 ngày / Khách hàng có 15 ngày trả hàng | cao | 0.8485 | Có |
+| 2 | Người bán chịu phí trả hàng / Phí gửi trả do nhà bán hàng trả | cao | 0.8787 | Có |
+| 3 | Người bán phản hồi một ngày / Tự động duyệt nếu quá hạn | trung bình | 0.7766 | Có |
+| 4 | Sản phẩm còn bảo hành / Trời mưa lớn | thấp | 0.6276 | Có |
+| 5 | Trả tại điểm giao nhận / Python là ngôn ngữ lập trình | thấp | 0.5551 | Có |
 
-Cặp 1 thấp hơn kỳ vọng vì baseline không hiểu “khách hàng” đồng nghĩa “người mua”. Đây là lý do nên dùng multilingual semantic embedding khi có điều kiện.
+Cặp 2 cao nhất (0.8787), đúng dự đoán vì hai câu diễn đạt cùng trách nhiệm bằng từ khác nhau. Bất ngờ là hai cặp không liên quan vẫn có điểm dương khá cao (0.6276 và 0.5551); vì vậy không nên dùng một ngưỡng cosine cố định mà cần đánh giá thứ hạng top-k trên chính corpus.
 
 ## 5. Kết quả truy xuất cá nhân (10 điểm)
 
-Chiến lược: `HeadingChunker(650)` có recursive fallback; backend normalized lexical hashing; 17 chunks. Top-3 đầy đủ ở `ket_qua_benchmark.txt`.
+Chiến lược: `HeadingChunker(650)` có recursive fallback; backend `gemini-embedding-001`; agent dùng `gemini-3.6-flash`; 16 chunks. Top-3 và câu trả lời Gemini đầy đủ ở `ket_qua_benchmark.txt`.
 
 | # | Query | Top-1 | Score | Kết luận có căn cứ |
 |---|---|---|---:|---|
-| 1 | Người mua có bao nhiêu ngày sau khi đơn đã giao? | Thời hạn gửi yêu cầu | 0.4404 | 15 ngày dương lịch |
-| 2 | Người bán xem xét yêu cầu trong bao lâu? | Xem xét yêu cầu | 0.5683 | 1 ngày; quá hạn tự động duyệt |
-| 3 | Ba lần lấy hàng thất bại thì sao? | Nhận hàng tại nhà | 0.4225 | Chuyển sang điểm giao nhận |
-| 4 | Ai chịu phí nếu lỗi thuộc người bán? | Trách nhiệm và phí | 0.5249 | Người bán chịu phí |
-| 5 | Người bán có bao nhiêu ngày khiếu nại yêu cầu chỉ hoàn tiền? | Khiếu nại chỉ hoàn tiền | 0.6682 | 15 ngày dương lịch |
+| 1 | Người mua có bao nhiêu ngày sau khi đơn đã giao? | Thời hạn gửi yêu cầu | 0.8569 | 15 ngày dương lịch |
+| 2 | Người bán xem xét yêu cầu trong bao lâu? | Xem xét yêu cầu | 0.8681 | 1 ngày; quá hạn tự động duyệt |
+| 3 | Ba lần lấy hàng thất bại thì sao? | Nhận hàng tại nhà | 0.8257 | Chuyển sang điểm giao nhận |
+| 4 | Ai chịu phí nếu lỗi thuộc người bán? | Trách nhiệm và phí | 0.8709 | Người bán chịu phí |
+| 5 | Người bán có bao nhiêu ngày khiếu nại yêu cầu chỉ hoàn tiền? | Khiếu nại chỉ hoàn tiền | 0.9059 | 15 ngày dương lịch |
 
-**5/5 query có bằng chứng ở top-1, đạt 10/10.** Câu trả lời agent trong `ket_qua_benchmark.txt` được trích nguyên câu chứa bằng chứng từ top-3; nếu không có bằng chứng, agent trả thông báo không tìm thấy thay vì bịa. Câu 1 không lọc bị lẫn tài liệu seller trong top-3; `audience=buyer` loại nhiễu này. Failure case: fixed-size cắt giữa từ/ý dù vẫn tìm đúng trên corpus nhỏ; heading giữ section mạch lạc hơn. Bài học quan trọng là phải kiểm nội dung chunk chứa đáp án, không chỉ kiểm `doc_id`.
+**5/5 query có bằng chứng ở top-1, đạt 10/10.** `gemini-3.6-flash` trả lời đúng cả 5 câu từ top-3 và kèm trích dẫn `[1]`. Câu 1 không lọc bị lẫn tài liệu seller trong top-3; `audience=buyer` loại nhiễu này. Failure case: fixed-size cắt giữa từ/ý và chỉ đạt 8/10; heading giữ section mạch lạc hơn. Bài học quan trọng là phải kiểm nội dung chunk chứa đáp án, không chỉ kiểm `doc_id`.
 
 | Tự đánh giá | Điểm |
 |---|---:|

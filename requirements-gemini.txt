@@ -1,0 +1,3 @@
+# Optional Gemini backend for semantic retrieval and grounded RAG answers.
+# Install with: python -m pip install -r requirements-gemini.txt
+google-genai==2.24.0

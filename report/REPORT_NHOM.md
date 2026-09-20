@@ -35,11 +35,11 @@ Baseline `ChunkingStrategyComparator(chunk_size=650)`:
 
 | Thành viên | Chiến lược thử nghiệm | Chunks | Điểm | Điểm mạnh / yếu |
 |---|---|---:|---:|---|
-| Cao Đức Hiệp | Fixed 650, overlap 100 | 9 | 9/10 | Ít chunk, có overlap / có thể cắt giữa ý |
+| Cao Đức Hiệp | Fixed 650, overlap 100 | 8 | 8/10 | Ít chunk, có overlap / có thể cắt giữa ý |
 | Trần Mạnh Hùng | Recursive 650 | 8 | 9/10 | Ranh giới tự nhiên / có thể gộp nhiều section |
 | Trần Vũ Gia Huy | Heading 650 + recursive fallback | 16 | 10/10 | Mạch lạc, dễ truy vết / nhiều chunk hơn |
 
-Heading phù hợp nhất vì tiêu đề chính sách là ranh giới ngữ nghĩa; section dài được recursive-split và gắn lại heading. Heading đạt 10/10, còn fixed và recursive đạt 9/10 vì chunk trả lời câu 3 chỉ đứng thứ hai. Ở câu 5, heading đưa đúng section lên top-1 với score 0.6682.
+Heading phù hợp nhất vì tiêu đề chính sách là ranh giới ngữ nghĩa; section dài được recursive-split và gắn lại heading. Với Gemini embedding, Heading đạt 10/10, Recursive đạt 9/10 và Fixed đạt 8/10. Ở câu 5, Heading đưa đúng section lên top-1 với score 0.9059.
 
 ## 3. Benchmark (10 điểm)
 
@@ -51,9 +51,9 @@ Heading phù hợp nhất vì tiêu đề chính sách là ranh giới ngữ ngh
 | 4 | Ai chịu phí khi lỗi thuộc người bán? | Người bán | return-methods / Trách nhiệm và phí |
 | 5 | Người bán có bao nhiêu ngày khiếu nại yêu cầu chỉ hoàn tiền? | 15 ngày dương lịch | seller-appeals / Khiếu nại chỉ hoàn tiền |
 
-Với heading, mọi query có đáp án ở top-1 và agent trích được câu trả lời có căn cứ từ chunk tương ứng. A/B câu 1: không filter, top-3 có cả chunk seller; với `audience=buyer`, cả ba đều đúng tài liệu buyer. Filter tăng precision nhưng có thể giảm recall nếu metadata bị gán quá hẹp.
+Với heading, mọi query có đáp án ở top-1; `gemini-3.6-flash` trả lời đúng và dẫn `[1]` cho cả 5 câu. A/B câu 1: không filter, top-3 có cả chunk seller; với `audience=buyer`, cả ba đều đúng tài liệu buyer. Filter tăng precision nhưng có thể giảm recall nếu metadata bị gán quá hẹp.
 
-Benchmark dùng lexical hashing offline, không phải semantic model; score phản ánh từ vựng. Nên chạy lại multilingual SentenceTransformer khi có mạng/GPU, giữ nguyên query/chunk/scoring.
+Benchmark chính thức dùng semantic embedding `gemini-embedding-001` và model sinh câu trả lời `gemini-3.6-flash`. `bench.py` vẫn có lexical fallback để chạy offline, nhưng số liệu trong báo cáo và `ket_qua_benchmark.txt` là kết quả Gemini thật.
 
 ## 4. Demo và bài học (5 điểm)
 
